@@ -8,9 +8,9 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Hello, React-Native!</Text>
-      <Text style={styles.text}>Now, what we gonna do?</Text>
-      <StatusBar style="auto" />
+      <View style={styles.subView1} />
+      <View style={styles.subView2} />
+      <View style={styles.subView3} />
     </View>
   );
 }
@@ -20,12 +20,23 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'column'
   },
-  text: {
+  subView1: {
+    flex: 1,
     fontSize: 36,
-    color: 'red'
+    backgroundColor: 'red'
   },
+  subView2: {
+    flex: 2,
+    fontSize: 36,
+    backgroundColor: 'green'
+  },
+  subView3: {
+    flex: 3,
+    fontSize: 36,
+    backgroundColor: 'blue'
+  }
 });
+
+// No width and height -> Use flex
