@@ -1,21 +1,48 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
 
 // Can't use <div> -> Use <View>
 // Import components from 'react-native'
 // All text content should be in <Text></Text>
+
+// Web browser -> Scroll Available
+// View -> Scroll Not Available
+// ScrollView -> Scroll Available
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// ScrollView horizontal pagingEnabled
+
 export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.city}>
         <Text style={styles.cityName}>Seoul</Text>
       </View>
-      <View style={styles.weather}>
+      <ScrollView
+        contentContainerStyle={styles.weather}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.day}>
           <Text style={styles.temp}>27</Text>
           <Text style={styles.description}>Sunny</Text>
         </View>
-      </View>
+        <View style={styles.day}>
+          <Text style={styles.temp}>27</Text>
+          <Text style={styles.description}>Sunny</Text>
+        </View>
+        <View style={styles.day}>
+          <Text style={styles.temp}>27</Text>
+          <Text style={styles.description}>Sunny</Text>
+        </View>
+        <View style={styles.day}>
+          <Text style={styles.temp}>27</Text>
+          <Text style={styles.description}>Sunny</Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -25,11 +52,10 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'green'
+    backgroundColor: 'yellowgreen'
   },
   city: {
     flex: 1,
-    backgroundColor: 'blue',
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -38,12 +64,10 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   },
   weather: {
-    flex: 3
   },
   day: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: 'teal'
+    width: SCREEN_WIDTH,
+    alignItems: 'center'
   },
   temp: {
     marginTop: 50,
