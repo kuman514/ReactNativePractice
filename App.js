@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
+import * as Location from 'expo-location';
 
 // Can't use <div> -> Use <View>
 // Import components from 'react-native'
@@ -14,10 +15,38 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // ScrollView horizontal pagingEnabled
 
 export default function App() {
+  const [city, setCity] = useState();
+  const [ok, setOk] = useState(true);
+
+  const ask = async () => {
+    // Get Permission of geolocation
+    const permission = await Location.requestForegroundPermissionsAsync();
+    //console.log(permission);
+    if (!permission.granted) {
+      setOk(false);
+    }
+
+    const { coords: { latitude, longitude } } = await Location.getCurrentPositionAsync({
+      accuracy: 5
+    });
+    //console.log(latitude, longitude);
+
+    const location = await Location.reverseGeocodeAsync(
+      { latitude, longitude },
+      { useGoogleMaps: false }
+    );
+    setCity(location[0].city);
+  };
+  useEffect(() => {
+    ask();
+  });
+
   return (
     <View style={styles.container}>
       <View style={styles.city}>
-        <Text style={styles.cityName}>Seoul</Text>
+        <Text style={styles.cityName}>
+          { city }
+        </Text>
       </View>
       <ScrollView
         contentContainerStyle={styles.weather}
