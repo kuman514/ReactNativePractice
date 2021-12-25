@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
+import API_KEY from './apikey';
 
 // Can't use <div> -> Use <View>
 // Import components from 'react-native'
@@ -15,31 +16,48 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // ScrollView horizontal pagingEnabled
 
 export default function App() {
-  const [city, setCity] = useState();
+  const [city, setCity] = useState('Loading...');
+  const [days, setDays] = useState([]);
   const [ok, setOk] = useState(true);
+  const [brought, setBrought] = useState(false);
 
   const ask = async () => {
-    // Get Permission of geolocation
+    // Get permission of geolocation
     const permission = await Location.requestForegroundPermissionsAsync();
     //console.log(permission);
     if (!permission.granted) {
       setOk(false);
     }
 
+    // Get current position
     const { coords: { latitude, longitude } } = await Location.getCurrentPositionAsync({
       accuracy: 5
     });
     //console.log(latitude, longitude);
 
+    // Get location via latitude and longitude
     const location = await Location.reverseGeocodeAsync(
       { latitude, longitude },
       { useGoogleMaps: false }
     );
     setCity(location[0].city);
+
+    // Fetch weather
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=alerts,minutely,hourly&appid=${API_KEY}&units=metric`);
+    console.log(response.ok);
+    if (response.ok) {
+      const weatherData = await response.json();
+      console.log(weatherData.daily);
+      setDays(weatherData.daily);
+      setBrought(true);
+    }
   };
+
   useEffect(() => {
-    ask();
-  });
+    if (ok && !brought) {
+      ask();
+    }
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -55,22 +73,31 @@ export default function App() {
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
-        <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
-        <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
-        <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
+        {
+          days.length === 0 ? (
+            <View style={styles.day}>
+              <ActivityIndicator color="white" size="large" style={{
+                marginTop: 10
+              }} />
+            </View>
+          ) : (
+            days.map((day, index) => {
+              return (
+                <View key={index} style={styles.day}>
+                  <Text style={styles.temp}>
+                    { parseFloat(day.temp.day).toFixed(1) }
+                  </Text>
+                  <Text style={styles.description}>
+                    { day.weather[0].main }
+                  </Text>
+                  <Text style={styles.tinyText}>
+                    { day.weather[0].description }
+                  </Text>
+                </View>
+              );
+            })
+          )
+        }
       </ScrollView>
     </View>
   );
@@ -105,6 +132,9 @@ const styles = StyleSheet.create({
   description: {
     marginTop: -30,
     fontSize: 60
+  },
+  tinyText: {
+    fontSize: 20
   }
 });
 
