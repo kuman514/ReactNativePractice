@@ -16,45 +16,60 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // ScrollView horizontal pagingEnabled
 
 export default function App() {
-  const [city, setCity] = useState('Loading...');
-  const [days, setDays] = useState([]);
-  const [ok, setOk] = useState(true);
-  const [brought, setBrought] = useState(false);
+  const [status, setStatus] = useState({
+    city: 'Loading...',
+    days: [],
+    ok: true,
+    brought: false
+  });
 
   const ask = async () => {
     // Get permission of geolocation
     const permission = await Location.requestForegroundPermissionsAsync();
     //console.log(permission);
     if (!permission.granted) {
-      setOk(false);
+      setStatus({
+        ...status,
+        ok: false
+      });
     }
 
     // Get current position
     const { coords: { latitude, longitude } } = await Location.getCurrentPositionAsync({
       accuracy: 5
     });
-    //console.log(latitude, longitude);
+    console.log(latitude, longitude);
 
     // Get location via latitude and longitude
     const location = await Location.reverseGeocodeAsync(
       { latitude, longitude },
       { useGoogleMaps: false }
     );
-    setCity(location[0].city);
 
     // Fetch weather
     const response = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=alerts,minutely,hourly&appid=${API_KEY}&units=metric`);
-    console.log(response.ok);
+    console.log(response.status);
     if (response.ok) {
       const weatherData = await response.json();
-      console.log(weatherData.daily);
-      setDays(weatherData.daily);
-      setBrought(true);
+      //console.log(weatherData.daily);
+      setStatus({
+        ...status,
+        city: location[0].city,
+        days: weatherData.daily,
+        brought: true
+      });
+    } else {
+      // If failed to fetch weather, set city, but it's not OK.
+      setStatus({
+        ...status,
+        city: location[0].city,
+        ok: false
+      });
     }
   };
 
   useEffect(() => {
-    if (ok && !brought) {
+    if (status.ok && !status.brought) {
       ask();
     }
   }, []);
@@ -63,7 +78,7 @@ export default function App() {
     <View style={styles.container}>
       <View style={styles.city}>
         <Text style={styles.cityName}>
-          { city }
+          { status.city }
         </Text>
       </View>
       <ScrollView
@@ -74,14 +89,14 @@ export default function App() {
         showsVerticalScrollIndicator={false}
       >
         {
-          days.length === 0 ? (
+          status.days.length === 0 ? (
             <View style={styles.day}>
               <ActivityIndicator color="white" size="large" style={{
-                marginTop: 10
+                marginTop: 11
               }} />
             </View>
           ) : (
-            days.map((day, index) => {
+            status.days.map((day, index) => {
               return (
                 <View key={index} style={styles.day}>
                   <Text style={styles.temp}>
