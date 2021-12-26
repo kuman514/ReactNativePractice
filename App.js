@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
+import { Fontisto } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import API_KEY from './apikey';
 
@@ -12,6 +13,16 @@ import API_KEY from './apikey';
 // ScrollView -> Scroll Available
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const icons = {
+  'Clouds': 'cloudy',
+  'Clear': 'day-sunny',
+  'Snow': 'snowflake',
+  'Atmosphere': 'cloudy-gusts',
+  'Rain': 'rains',
+  'Drizzle': 'rain',
+  'Thunderstorm': 'lightnings'
+};
 
 // ScrollView horizontal pagingEnabled
 
@@ -100,9 +111,12 @@ export default function App() {
               status.days.map((day, index) => {
                 return (
                   <View key={index} style={styles.day}>
-                    <Text style={styles.temp}>
-                      { parseFloat(day.temp.day).toFixed(1) }
-                    </Text>
+                    <View style={styles.tempAndMain}>
+                      <Text style={styles.temp}>
+                        { `${parseFloat(day.temp.day).toFixed(1)}℃` }
+                      </Text>
+                      <Fontisto name={icons[day.weather[0].main]} size={68} color="black" />
+                    </View>
                     <Text style={styles.description}>
                       { day.weather[0].main }
                     </Text>
@@ -143,12 +157,17 @@ const styles = StyleSheet.create({
   weather: {
   },
   day: {
-    width: SCREEN_WIDTH,
-    alignItems: 'center'
+    width: SCREEN_WIDTH
+  },
+  tempAndMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    justifyContent: 'space-between'
   },
   temp: {
     marginTop: 50,
-    fontSize: 178
+    fontSize: 70
   },
   description: {
     marginTop: -30,
