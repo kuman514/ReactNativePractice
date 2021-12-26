@@ -32,39 +32,39 @@ export default function App() {
         ...status,
         ok: false
       });
-    }
-
-    // Get current position
-    const { coords: { latitude, longitude } } = await Location.getCurrentPositionAsync({
-      accuracy: 5
-    });
-    console.log(latitude, longitude);
-
-    // Get location via latitude and longitude
-    const location = await Location.reverseGeocodeAsync(
-      { latitude, longitude },
-      { useGoogleMaps: false }
-    );
-
-    // Fetch weather
-    const response = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=alerts,minutely,hourly&appid=${API_KEY}&units=metric`);
-    console.log(response.status);
-    if (response.ok) {
-      const weatherData = await response.json();
-      //console.log(weatherData.daily);
-      setStatus({
-        ...status,
-        city: location[0].city,
-        days: weatherData.daily,
-        brought: true
-      });
     } else {
-      // If failed to fetch weather, set city, but it's not OK.
-      setStatus({
-        ...status,
-        city: location[0].city,
-        ok: false
+      // Get current position
+      const { coords: { latitude, longitude } } = await Location.getCurrentPositionAsync({
+        accuracy: 5
       });
+      //console.log(latitude, longitude);
+
+      // Get location via latitude and longitude
+      const location = await Location.reverseGeocodeAsync(
+        { latitude, longitude },
+        { useGoogleMaps: false }
+      );
+
+      // Fetch weather
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=alerts,minutely,hourly&appid=${API_KEY}&units=metric`);
+      //console.log(response.status);
+      if (response.ok) {
+        const weatherData = await response.json();
+        //console.log(weatherData.daily);
+        setStatus({
+          ...status,
+          city: location[0].city,
+          days: weatherData.daily,
+          brought: true
+        });
+      } else {
+        // If failed to fetch weather, set city, but it's not OK.
+        setStatus({
+          ...status,
+          city: location[0].city,
+          ok: false
+        });
+      }
     }
   };
 
@@ -89,28 +89,34 @@ export default function App() {
         showsVerticalScrollIndicator={false}
       >
         {
-          status.days.length === 0 ? (
-            <View style={styles.day}>
-              <ActivityIndicator color="white" size="large" style={{
-                marginTop: 11
-              }} />
-            </View>
+          status.ok ? (
+            status.days.length === 0 ? (
+              <View style={styles.day}>
+                <ActivityIndicator color="white" size="large" style={{
+                  marginTop: 11
+                }} />
+              </View>
+            ) : (
+              status.days.map((day, index) => {
+                return (
+                  <View key={index} style={styles.day}>
+                    <Text style={styles.temp}>
+                      { parseFloat(day.temp.day).toFixed(1) }
+                    </Text>
+                    <Text style={styles.description}>
+                      { day.weather[0].main }
+                    </Text>
+                    <Text style={styles.tinyText}>
+                      { day.weather[0].description }
+                    </Text>
+                  </View>
+                );
+              })
+            )
           ) : (
-            status.days.map((day, index) => {
-              return (
-                <View key={index} style={styles.day}>
-                  <Text style={styles.temp}>
-                    { parseFloat(day.temp.day).toFixed(1) }
-                  </Text>
-                  <Text style={styles.description}>
-                    { day.weather[0].main }
-                  </Text>
-                  <Text style={styles.tinyText}>
-                    { day.weather[0].description }
-                  </Text>
-                </View>
-              );
-            })
+            <View>
+              <Text>Error</Text>
+            </View>
           )
         }
       </ScrollView>
